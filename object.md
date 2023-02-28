@@ -4,9 +4,15 @@
 
 请沟通python版本(尤其是web后端和qq机器人部分需要尽可能使用相同的版本)
 
-请沟通flask版本, 此处如果有必要可以使用anacoda
+请沟通flask版本, 此处如果有必要可以使用anaconda
 
 # 安卓端部分
+
+### 项目全局信息
+
+将会在/Android_app文件夹下进行
+
+由于beeware必须要项目名, 项目名设置为`pytector`
 
 ### 核心目标
 
