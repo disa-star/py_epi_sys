@@ -18,7 +18,7 @@
 
 而后可以在这个版本使用 pip install 等指令, 下载包并控制版本
 
-而后在oy3.8启用的时候, 使用 `conda env export > environment.yml` 来在当前目录下生成一个环境配置信息文件
+而后在py3.8启用的时候, 使用 `conda env export > environment.yml` 来在当前目录下生成一个环境配置信息文件
 
 使用 `conda env create -f environment.yml` 读入配置文件并在本地创建一个新环境
 
