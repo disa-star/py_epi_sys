@@ -6,6 +6,29 @@
 
 请沟通flask版本, 此处如果有必要可以使用anaconda
 
+(3.1日更新) 请尽可能使用anaconda 下载地址 [https://www.anaconda.com/products/distribution](https://www.anaconda.com/products/distribution) 
+
+熟悉anaconda: 首先在程序搜索中找到 "Anaconda Prompt(anaconda3)" 并点击运行
+
+而后使用`conda info --envs`查看已有环境
+
+用`conda create -n py3.8 python=3.8` 来新建一个py3.8版本的环境
+
+`conda activate py3.8` 切换到指定版本
+
+而后可以在这个版本使用 pip install 等指令, 下载包并控制版本
+
+而后在oy3.8启用的时候, 使用 `conda env export > environment.yml` 来在当前目录下生成一个环境配置信息文件
+
+使用 `conda env create -f environment.yml` 读入配置文件并在本地创建一个新环境
+
+**我们并不一定要用anaconda控制版本, 但是需要用yml来统一版本信息(尤其是web和qq机器人部分)**
+
+每个支持python的IDE应该都支持使用yml, 并且我的visual studio可以连接到这个环境
+
+**在此我强烈推荐先新建一个完全新的python环境(没有任何第三方包), 而后web和qq在任何一方需要下载新的第三方包时, 都要更新这个yml文件**, 最好的话可以在每次pull之后就使用得到的yml文件更新一下自己的环境(但这样有点浪费时间), 至少要确保yml文件在你们push的时候和自己的环境相一致, 并且在最后出成果交付的时候要统一
+
+
 # 安卓端部分
 
 ### 项目全局信息
