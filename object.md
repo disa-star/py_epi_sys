@@ -10,7 +10,7 @@
 
 熟悉anaconda: 首先在程序搜索中找到 "Anaconda Prompt(anaconda3)" 并点击运行
 
-而后使用`conda info --envs`查看已有环境
+而后使用 `conda info --envs` 查看已有环境
 
 用`conda create -n py3.8 python=3.8` 来新建一个py3.8版本的环境
 
