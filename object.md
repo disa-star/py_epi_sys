@@ -29,6 +29,30 @@
 **在此我强烈推荐先新建一个完全新的python环境(没有任何第三方包), 而后web和qq在任何一方需要下载新的第三方包时, 都要更新这个yml文件**, 最好的话可以在每次pull之后就使用得到的yml文件更新一下自己的环境(但这样有点浪费时间), 至少要确保yml文件在你们push的时候和自己的环境相一致, 并且在最后出成果交付的时候要统一
 
 
+(3.2日更新)
+
+tips: 如果发现 anaconda 各种无法连接到 github, 考虑一下设置 git \\ conda 的代理和 pip 的代理 **注意, 代理主要分为vpn和http两种, vpn无需像这样进行设置, 但http代理需要设置, 具体情况(ip和端口请根据实际情况进行改动)**
+
+
+
+这是anaconda的
+```
+conda config --set proxy_servers.http http://127.0.0.1:4780
+conda config --set proxy_servers.https https://127.0.0.1:4780
+```
+
+这是pip的
+```
+set HTTP_PROXY=http://127.0.0.1:4780 
+```
+
+这是git的
+```
+git config --global http.proxy 127.0.0.1:4780 
+git config --global https.proxy 127.0.0.1:4780 
+```
+
+
 # 安卓端部分
 
 ### 项目全局信息
