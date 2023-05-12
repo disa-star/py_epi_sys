@@ -1,3 +1,4 @@
+'''
 import pickle
 
 def func():
@@ -42,3 +43,11 @@ for a in range(0,5):
     #a = 2
     ld.print()
 ld.func()
+'''
+class b():
+    pass
+
+a = b()
+dic = {1:a,3:4}
+
+print(a.__dict__)
