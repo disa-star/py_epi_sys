@@ -124,7 +124,7 @@ class event(id_control):
                 owner=atom_info['owner_id'],
                 repeat=atom_info['repeat'],
                 world_status=world_status)
-            
+            del world_status['event_id_now']
             if ops == 0:
                 pass
             elif ops == 1:
@@ -182,6 +182,48 @@ class attribution(id_control):
         del attribution_model_dict[self.id]
         super().__del__(self)
 
+    def change_limit(self,lim:list,world_status:dict):
+        assert self.valuable == True
+        world_status['limit_change_attribution'] = self.id
+        world_status['limit_change_unit'] = self.owner
+        world_status['lim_change_to'] = lim
+        for event_id in self.event_list_on_limit_change:
+            ops,world_status = universal_id_dict[event_id].run(world_status)
+            #同样,下面为了接收event run出来的结果
+            if ops == 0:
+                pass
+            elif ops == 1:
+                break
+            elif ops >= 2:
+                universal_id_dict[world_status['limit_change_unit']].attribution_dict[world_status['limit_change_attribution']].set_limit_commit(world_status['lim_change_to'])
+                del world_status['limit_change_attribution'],world_status['limit_change_unit'],world_status['lim_change_to']
+                return ops-1,world_status
+            
+        universal_id_dict[world_status['limit_change_unit']].attribution_dict[world_status['limit_change_attribution']].set_limit_commit(world_status['lim_change_to'])
+        del world_status['limit_change_attribution'],world_status['limit_change_unit'],world_status['lim_change_to']
+        return 0,world_status
+    
+    def add_value(self,delta:int,world_status:dict):
+        assert self.valuable == True
+        world_status['value_change_attribution'] = self.id
+        world_status['value_change_unit'] = self.owner
+        world_status['value_change_by'] = delta
+        for event_id in self.event_list_on_value_change:
+            ops,world_status = universal_id_dict[event_id].run(world_status)
+            #同样,下面为了接收event run出来的结果
+            if ops == 0:
+                pass
+            elif ops == 1:
+                break
+            elif ops >= 2:
+                universal_id_dict[world_status['value_change_unit']].attribution_dict[world_status['value_change_attribution']].change_value_commit(world_status['value_change_by'])
+                del world_status['value_change_attribution'],world_status['value_change_unit'],world_status['value_change_by']
+                return ops-1,world_status
+            
+        universal_id_dict[world_status['value_change_unit']].attribution_dict[world_status['value_change_attribution']].change_value_commit(world_status['value_change_by'])
+        del world_status['value_change_attribution'],world_status['value_change_unit'],world_status['value_change_by']
+        return 0,world_status
+    
     def set_owner(self,owner_id,*args,**kwargs):
         self.owner = owner_id
         if self.valuable:
@@ -258,6 +300,46 @@ class attribution(id_control):
                     'attach_ctn':self.attach_ctn}
 
 
+class action(id_control):
+    def __init__(self,id=0,*args,**kwargs):
+        assert isinstance(id,int)
+        self.num = 2
+        if 'description' in kwargs.keys():
+            self.description = kwargs['description']
+        if 'reg_atom_dict' in kwargs.keys():
+            self.reg_atom_dict = kwargs['reg_atom_dict']
+        if 'event_list' in kwargs.keys():
+            self.event_list = kwargs['event_list']
+        #稍后实现在action时获得attribution功能
+        
+        global universal_id_dict
+        super().__init__(self,id=id)
+
+    def setup(self,owner_id):
+        for event_id in self.reg_atom_dict:
+            for atom_id in self.reg_atom_dict[event_id]:
+                universal_id_dict[event_id].atom_list_append(atom_id,owner_id)
+
+    def setdown(self,owner_id):
+        for event_id in self.reg_atom_dict:
+            for atom_id in self.reg_atom_dict[event_id]:
+                universal_id_dict[event_id].atom_list_pop(atom_id,owner_id)
+
+    def do(self,owner_id,world_status:dict):
+        self.setup(owner_id)
+        for event_id in self.event_list:
+            world_status['action_id_now'] = self.id
+            ops,world_status = universal_id_dict[event_id].run(world_status)
+            del world_status['action_id_now']
+            if ops == 0:
+                pass
+            elif ops == 1:
+                break
+            elif ops >= 2:
+                self.setdown(owner_id)
+                return ops-1,world_status
+        self.setdown(owner_id)
+        return 0,world_status
 
 
 
@@ -274,7 +356,7 @@ class unit(id_control):
                 self.attribution_dict[id].set_owner(self.id,**(kwargs['init_attribution'][id]))
 
         global universal_id_dict,attribution_model_dict
-        super().__init__(id)
+        super().__init__(self,id=id)
     #这个是权宜之计
     def after_change_attribution_dict(self):
         temp = copy.deepcopy(attribution_model_dict)
@@ -293,17 +375,7 @@ class unit(id_control):
         for id in self.attribution_dict:
             self.attribution_dict[id].set_owner(self.id)
 
-    def set_limit(self,lim:list,world_status:dict):
-        assert self.valuable == True
-        world_status['limit_change_attribute'] = self.id
-        world_status['lim_change_to'] = lim
-        for event_id in self.event_list_on_limit_change:
-            ops,world_status = universal_id_dict[event_id].run(world_status)
-            #同样,下面为了接收event run出来的结果
-            if ops == 0:
-                pass
-            elif ops == 1:
-                break
-            elif ops >= 2:
-                world_status['limit_change_attribute'].set_limit_commit(world_status['lim_change_to'])
+    def act(self,action_id,world_status):
+        universal_id_dict[action_id].do(self.id,world_status)
 
+    #attach系列函数稍后实现
