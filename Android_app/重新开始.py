@@ -76,12 +76,6 @@ class atom(id_control):
 
 
 
-
-
-
-
-
-
 class event(id_control):
     def __init__(self,id=0,*args,**kwargs):
         #载入描述
@@ -118,13 +112,32 @@ class event(id_control):
                 del self.atom_list[i]
 
     def run(self,world_status:dict):
+        #用于遗传action_id
+        if 'action_id_now' in world_status.keys():
+            action_prev = world_status['action_id_now']
+        else:
+            action_prev = None
+        if 'action_starter' in world_status.keys():
+            starter_prev = world_status['action_starter']
+        else:
+            starter_prev = None      
+            
         for atom_info in self.atom_list:
+            if action_prev != None:
+                world_status['action_id_now'] = action_prev
+            if starter_prev != None:
+                world_status['action_starter'] = starter_prev
             world_status['event_id_now'] = self.id
             ops,world_status = universal_id_dict[atom_info['atom_id']].func(
                 owner=atom_info['owner_id'],
                 repeat=atom_info['repeat'],
                 world_status=world_status)
+            #删除阶段
             del world_status['event_id_now']
+            if action_prev != None:
+                del world_status['action_id_now']
+            if starter_prev != None:
+                del world_status['action_starter']
             if ops == 0:
                 pass
             elif ops == 1:
@@ -135,15 +148,7 @@ class event(id_control):
                 return ops-1,world_status
         return 0,world_status
 
-    def btn_run(self):
-        #禁止使用
-        pass
-
     
-
-
-
-
 
 
 
@@ -182,7 +187,7 @@ class attribution(id_control):
         del attribution_model_dict[self.id]
         super().__del__(self)
 
-    def change_limit(self,lim:list,world_status:dict):
+    def set_limit(self,lim:list,world_status:dict):
         assert self.valuable == True
         world_status['limit_change_attribution'] = self.id
         world_status['limit_change_unit'] = self.owner
@@ -203,6 +208,11 @@ class attribution(id_control):
         del world_status['limit_change_attribution'],world_status['limit_change_unit'],world_status['lim_change_to']
         return 0,world_status
     
+    #套皮函数
+    def change_limit(self,delta:list,world_status:dict):
+        lim = [self.limit[0]+delta[0],self.limit[1]+delta[1]]
+        self.set_limit(lim,world_status)
+
     def add_value(self,delta:int,world_status:dict):
         assert self.valuable == True
         world_status['value_change_attribution'] = self.id
@@ -224,6 +234,11 @@ class attribution(id_control):
         del world_status['value_change_attribution'],world_status['value_change_unit'],world_status['value_change_by']
         return 0,world_status
     
+    #套皮
+    def set_value(self,value:int):
+        delta = value - self.value
+        self.add_value(delta)
+
     def set_owner(self,owner_id,*args,**kwargs):
         self.owner = owner_id
         if self.valuable:
@@ -243,6 +258,7 @@ class attribution(id_control):
         elif self.value < self.limit[0]:
             self.value = self.limit[0]
 
+    #这之下是安全的btn系列函数
     def set_limit_commit(self,lim:list):
         self.limit = lim
         self.normalization()
@@ -263,6 +279,7 @@ class attribution(id_control):
         self.value += delta
         #归一化防止溢出
         self.normalization()
+    #这之上是安全的btn系列函数
 
     def attach(self):
         #这个和action的注册相似,
@@ -329,6 +346,7 @@ class action(id_control):
         self.setup(owner_id)
         for event_id in self.event_list:
             world_status['action_id_now'] = self.id
+            world_status['action_starter'] = owner_id
             ops,world_status = universal_id_dict[event_id].run(world_status)
             del world_status['action_id_now']
             if ops == 0:
