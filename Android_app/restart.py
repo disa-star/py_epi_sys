@@ -1,6 +1,7 @@
 import copy
 universal_id_dict = {}
 attribution_model_dict = {}
+attribution_model_ctn = {}
 #定义atom末位为00
 #event为01
 #action为02
@@ -193,14 +194,21 @@ class attribution(id_control):
         self.attach_ctn = 0
         self.num = 3
 
-        global universal_id_dict,attribution_model_dict
+        global universal_id_dict,attribution_model_dict,attribution_model_ctn
         assert isinstance(id,int) 
         super().__init__(id=id)
         attribution_model_dict[self.id] = self
+        
+        if self.id not in attribution_model_ctn.keys():
+            attribution_model_ctn[self.id] = 1
+        else:
+            attribution_model_ctn[self.id] += 1
 
     def __del__(self):
-        del attribution_model_dict[self.id]
-        super().__del__()
+        attribution_model_dict[self.id] -=1
+        if attribution_model_dict[self.id]<=0:
+            del attribution_model_dict[self.id] 
+            super().__del__()
 
     def set_limit(self,lim:list,world_status:dict):
         assert self.valuable == True
@@ -397,9 +405,12 @@ class unit(id_control):
     #这个是权宜之计
     def after_change_attribution_dict(self):
         temp = copy.deepcopy(attribution_model_dict)
+        for id in temp:
+            temp[id].set_owner(self.id)
         for id in self.attribution_dict:
+            print(id,temp)
             #转移信息+全部注销一次
-            temp[id].set_owner(self.id,self.attribution_dict[id].dict_out_data())
+            temp[id].set_owner(self.id,**(self.attribution_dict[id].dict_out_data()))
             self.attribution_dict[id].attach_to_level(0)
 
         self.attribution_dict = temp

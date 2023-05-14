@@ -7,9 +7,9 @@ import copy
 #unit为04
 #
 attack = res.event(id = 0)
-print(attack.id)
+#print(attack.id)
 after_attack = res.event(id = 0)
-print(after_attack.id)
+#print(after_attack.id)
 #
 hp = res.attribution(valuable=True,limit=[0,20],value=10)
 melee = res.attribution(valuable=True,limit=[0,999],value=5)
@@ -23,7 +23,7 @@ def blood_steal_realize(owner,repeat,world_status):
     return 0,world_status
 blood_steal_atom = res.atom(blood_steal_realize)
 
-blood_steal = res.attribution(valuable=False,reg_atom_dict={after_attack.id:[blood_steal_atom.id]})
+
 
 def damage_settlement(owner,repeat,world_status):
     if world_status['event_id_now'] == attack.id:
@@ -36,6 +36,13 @@ player = res.unit(init_attribution = {hp.id:{'value':21,'limit':[0,35],'attach_c
                                       melee.id:{'value':7,'attach_ctn':1}})
 p1 = copy.deepcopy(player)
 p1.after_deepcopy()
+
+blood_steal = res.attribution(valuable=False,reg_atom_dict={after_attack.id:[blood_steal_atom.id]})
+#测试一下after_change_attribution_dict
+#print(res.attribution_model_dict)
+#player.after_change_attribution_dict()
+p1.after_change_attribution_dict()
+
 p1.attribution_dict[blood_steal.id].attach()
 p2 = copy.deepcopy(player)
 p2.after_deepcopy()
