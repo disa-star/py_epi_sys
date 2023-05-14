@@ -44,10 +44,5 @@ for a in range(0,5):
     ld.print()
 ld.func()
 '''
-class b():
-    pass
-
-a = b()
-dic = {1:a,3:4}
-
-print(a.__dict__)
+a = {1:2,3:4}
+print(a[1])

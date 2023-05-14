@@ -12,10 +12,11 @@ class id_control():
         assert self.num != None
         #决定id
         #正则化id
-        id = id*100 + self.num
+        
         if id <= 0:
             self.id = self.get_valid_id()
         else:
+            id = id*100 + self.num
             if self.id_validation_check(id):
                 #正则化id
                 self.id = id
@@ -47,6 +48,11 @@ class id_control():
     def btn_change_description(self,description:dict):
         self.description = description
 
+    def refresh_id(self):
+        if universal_id_dict[self.id] is not self:
+            self.id = self.get_valid_id()
+            universal_id_dict[self.id] = self
+
 
 class atom(id_control):
     
@@ -59,7 +65,7 @@ class atom(id_control):
         self.func = func
         assert isinstance(id,int) 
         self.num = 0
-        super().__init__(self,id=id)
+        super().__init__(id=id)
     
     def btn_rebond(self,func):
         self.func = func
@@ -87,7 +93,7 @@ class event(id_control):
         global universal_id_dict
         assert isinstance(id,int) 
         self.num = 1
-        super().__init__(self,id=id)
+        super().__init__(id=id)
     
     def atom_list_append(self,atom_id,owner_id):
         for i,atom_info in enumerate(self.atom_list):
@@ -134,9 +140,9 @@ class event(id_control):
                 world_status=world_status)
             #删除阶段
             del world_status['event_id_now']
-            if action_prev != None:
+            if action_prev == None:
                 del world_status['action_id_now']
-            if starter_prev != None:
+            if starter_prev == None:
                 del world_status['action_starter']
             if ops == 0:
                 pass
@@ -163,29 +169,38 @@ class attribution(id_control):
             self.valuable = False
         if 'reg_atom_dict' in kwargs.keys():
                 self.reg_atom_dict = kwargs['reg_atom_dict']
+        else:
+            self.reg_atom_dict = []
 
         if self.valuable:
             if 'limit' in kwargs.keys():
-                self.limit = kwargs['limit']    
+                self.limit = kwargs['limit']  
+            else:
+                self.limit = [0,0]
             if 'value' in kwargs.keys():
                 self.value = kwargs['value']
-            if 'atom_list_on_value_change' in kwargs.keys():
-                self.atom_list_on_value_change = kwargs['atom_list_on_value_change']
-            if 'atom_list_on_limit_change' in kwargs.keys():
-                self.atom_list_on_limit_change = kwargs['atom_list_on_limit_change']
+            else:
+                self.value = 0
+            if 'event_list_on_value_change' in kwargs.keys():
+                self.event_list_on_value_change = kwargs['event_list_on_value_change']
+            else:
+                self.event_list_on_value_change = {}
+            if 'event_list_on_limit_change' in kwargs.keys():
+                self.event_list_on_limit_change = kwargs['event_list_on_limit_change']
+            else:
+                self.event_list_on_limit_change = {}
         self.owner = None
         self.attach_ctn = 0
         self.num = 3
 
         global universal_id_dict,attribution_model_dict
         assert isinstance(id,int) 
-        self.num = 1
-        super().__init__(self,id=id)
+        super().__init__(id=id)
         attribution_model_dict[self.id] = self
 
     def __del__(self):
         del attribution_model_dict[self.id]
-        super().__del__(self)
+        super().__del__()
 
     def set_limit(self,lim:list,world_status:dict):
         assert self.valuable == True
@@ -330,7 +345,7 @@ class action(id_control):
         #稍后实现在action时获得attribution功能
         
         global universal_id_dict
-        super().__init__(self,id=id)
+        super().__init__(id=id)
 
     def setup(self,owner_id):
         for event_id in self.reg_atom_dict:
@@ -363,18 +378,22 @@ class action(id_control):
 
 class unit(id_control):
     def __init__(self,id=0,*args,**kwargs):
+        global universal_id_dict
+        global attribution_model_dict
         assert isinstance(id,int)
         self.num = 4
+        super().__init__(id=id)
         if 'description' in kwargs.keys():
             self.description = kwargs['description']
-        
+        #初始化全部词缀和默认已拥有词缀
         self.attribution_dict = copy.deepcopy(attribution_model_dict)
+        for id in self.attribution_dict:
+            self.attribution_dict[id].set_owner(self.id)
         if 'init_attribution' in kwargs:
             for id in kwargs['init_attribution']:
                 self.attribution_dict[id].set_owner(self.id,**(kwargs['init_attribution'][id]))
 
-        global universal_id_dict,attribution_model_dict
-        super().__init__(self,id=id)
+        
     #这个是权宜之计
     def after_change_attribution_dict(self):
         temp = copy.deepcopy(attribution_model_dict)
@@ -388,8 +407,7 @@ class unit(id_control):
 
     def after_deepcopy(self):
         #如果自己和全局字典的内容不一样
-        if self is not universal_id_dict[self.id]:
-            self.id = self.get_valid_id()
+        self.refresh_id()
         for id in self.attribution_dict:
             self.attribution_dict[id].set_owner(self.id)
 
