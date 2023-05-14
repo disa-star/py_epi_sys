@@ -6,10 +6,8 @@ import copy
 #attribution为03
 #unit为04
 #
-attack = res.event(id = 0)
-#print(attack.id)
-after_attack = res.event(id = 0)
-#print(after_attack.id)
+attack = res.event()
+after_attack = res.event()
 #
 hp = res.attribution(valuable=True,limit=[0,20],value=10)
 melee = res.attribution(valuable=True,limit=[0,999],value=5)
@@ -39,7 +37,7 @@ p1.after_deepcopy()
 
 blood_steal = res.attribution(valuable=False,reg_atom_dict={after_attack.id:[blood_steal_atom.id]})
 #测试一下after_change_attribution_dict
-#print(res.attribution_model_dict)
+
 #player.after_change_attribution_dict()
 p1.after_change_attribution_dict()
 
@@ -49,7 +47,6 @@ p2.after_deepcopy()
 p1.act(do_attack.id,{'attacker':p1.id,
                      'attackee':p2.id,
                      'damage':p1.attribution_dict[melee.id].value})
-print(res.universal_id_dict)
 print(p1.attribution_dict[hp.id].__dict__)
 print(p2.attribution_dict[hp.id].__dict__)
 del p2
