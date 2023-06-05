@@ -53,6 +53,16 @@ class id_control():
             self.id = self.get_valid_id()
             universal_id_dict[self.id] = self
 
+    def on_load(self):
+        if self.id in universal_id_dict.keys():
+            if universal_id_dict[self.id] == self:
+                pass
+            else:
+                self.id = self.get_valid_id()
+                universal_id_dict[self.id] = self
+        else:
+            universal_id_dict[self.id] = self
+
 
 class atom(id_control):
     
@@ -94,7 +104,7 @@ class event(id_control):
         assert isinstance(id,int) 
         self.num = 1
         super().__init__(id=id)
-    
+        
     def atom_list_append(self,atom_id,owner_id):
         for i,atom_info in enumerate(self.atom_list):
             if atom_id == atom_info['atom_id'] and owner_id == atom_info['owner_id']:
