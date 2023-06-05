@@ -119,7 +119,7 @@ def drawing():
         bg_image = Image.open(st.session_state["uploaded_file"])
         w = bg_image.width       #图片的宽
         h = bg_image.height      #图片的高
-
+    
 
     # 画布设置
     canvas_result = st_canvas(
@@ -138,6 +138,26 @@ def drawing():
         point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
         key="canvas",
     )
+def unit_battle():
+    st.subheader('战斗系统')
+    if st.session_state['df'] is None:
+        st.write('目前还没有创建任何人物')
+        return
+    
+def dice_roll():
+    st.subheader("投掷骰子")
+    st.write("点击投掷骰子")
+    result = None
+    if st.button("六面骰"):
+        result = random.randint(1, 6)
+    if st.button("八面骰"):
+        result = random.randint(1, 8)
+    if st.button("十面骰"):
+        result = random.randint(1, 10)
+    if st.button("二十面骰"):
+        result = random.randint(1, 20)
+    if result is not None:
+        st.caption(f'本次投掷骰子的结果是{result}')
 
 def add_atom():
     id = num_input()
@@ -158,20 +178,29 @@ with open("{random_name}", "wb") as f:
         f.write(context)
     os.run('temp.py')
 
-def dice_roll():
-    st.subheader("投掷骰子")
-    st.write("点击投掷骰子")
-    result = None
-    if st.button("六面骰"):
-        result = random.randint(1, 6)
-    if st.button("八面骰"):
-        result = random.randint(1, 8)
-    if st.button("十面骰"):
-        result = random.randint(1, 10)
-    if st.button("二十面骰"):
-        result = random.randint(1, 20)
-    if result is not None:
-        st.caption(f'本次投掷骰子的结果是{result}')
+def qq_management():
+    input_number = st.text_input("请输入QQ群号：")
+    if st.button('加入'):
+        qq = Group_function(input_number)
+        if 'qq_flag' not in st.session_state:
+            qq.Get_messgae_and_auto_reply()
+            st.session_state['qq_flag'] = True
+        if st.button('发送地图'):
+            qq.G_picture(st.session_state["uploaded_file"])
+        if st.button('发送信息'):
+            qq.G_send(st.text_input)
+        option1 = st.selectbox("禁言人员",qq.g_list)
+        ban_list = st.session_state['ban_list']
+        option2 = st.selectbox("解禁人员",ban_list)
+        if st.button('禁言'):
+            qq.G_ban(option1)
+            ban_list.append(option1)
+            st.session_state['ban_list'] = ban_list
+        if st.button('解禁'):
+            n = ban_list.index(option2)
+            qq.G_ban_cancel(option2)
+            ban_list.pop(n)   
+            st.session_state['ban_list'] = ban_list
 
 def main():
     st.title('GM辅助系统')
