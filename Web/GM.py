@@ -119,7 +119,7 @@ def drawing():
         bg_image = Image.open(st.session_state["uploaded_file"])
         w = bg_image.width       #图片的宽
         h = bg_image.height      #图片的高
-    
+
 
     # 画布设置
     canvas_result = st_canvas(
@@ -138,6 +138,25 @@ def drawing():
         point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
         key="canvas",
     )
+
+def add_atom():
+    id = num_input()
+    description = dict_input()
+    func = paragraph_input()
+    with open('temp.py','w') as f:
+        context = f'''
+import restart as res
+import pickle
+def temp(owner,repeat,world_status):
+    {func}
+    return 0,world_status
+
+a = res.atom(temp,id={id},description = {description})
+with open("{random_name}", "wb") as f:
+    pickle.dump(a, f)
+        '''
+        f.write(context)
+    os.run('temp.py')
 
 def dice_roll():
     st.subheader("投掷骰子")
