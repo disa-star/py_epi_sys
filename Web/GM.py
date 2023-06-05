@@ -158,6 +158,16 @@ with open("{random_name}", "wb") as f:
         f.write(context)
     os.run('temp.py')
 
+    with open(random_name, "rb") as f:
+        ddd = pickle.load(f)
+    ddd.on_load()
+
+def load_all():
+    for file in folder:
+        with open(file,"rb") as f:
+            ddd = pickle.load(f)
+        ddd.on_load()
+
 def dice_roll():
     st.subheader("投掷骰子")
     st.write("点击投掷骰子")
