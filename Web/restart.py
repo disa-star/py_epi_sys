@@ -53,6 +53,12 @@ class id_control():
             self.id = self.get_valid_id()
             universal_id_dict[self.id] = self
 
+    def on_load(self):
+        if self.id in universal_id_dict.keys():
+            self.refresh_id()
+        else:
+            universal_id_dict[self.id] = self
+
 
 class atom(id_control):
     
@@ -94,7 +100,7 @@ class event(id_control):
         assert isinstance(id,int) 
         self.num = 1
         super().__init__(id=id)
-    
+        
     def atom_list_append(self,atom_id,owner_id):
         for i,atom_info in enumerate(self.atom_list):
             if atom_id == atom_info['atom_id'] and owner_id == atom_info['owner_id']:
@@ -198,6 +204,17 @@ class attribution(id_control):
         super().__init__(id=id)
         attribution_model_dict[self.id] = self
 
+    def on_load(self):
+        if self.id in attribution_model_dict.keys():
+            if attribution_model_dict[self.id] is not self:
+                self.refresh_id()
+                attribution_model_dict[self.id] = self
+            else:
+                pass
+        else:
+            attribution_model_dict[self.id] = self
+        return super().on_load()
+
     def __del__(self):
         pass
 
@@ -261,9 +278,9 @@ class attribution(id_control):
     def set_owner(self,owner_id,*args,**kwargs):
         self.owner = owner_id
         if self.valuable:
-            if 'value' in kwargs.keys():
+            if 'value' in kwargs:
                 self.value = kwargs['value']
-            if 'limit' in kwargs.keys():
+            if 'limit' in kwargs:
                 self.limit = kwargs['limit']
             self.normalization()
         else:
@@ -405,7 +422,9 @@ class unit(id_control):
         for id in temp:
             temp[id].set_owner(self.id)
         for id in self.attribution_dict:
-            
+            if id not in temp:
+                self.attribution_dict[id].attach_to_level(0)
+                continue
             #转移信息+全部注销一次
             temp[id].set_owner(self.id,**(self.attribution_dict[id].dict_out_data()))
             self.attribution_dict[id].attach_to_level(0)

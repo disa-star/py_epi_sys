@@ -7,18 +7,19 @@ import random
 import restart as res
 from QQ import Group_function
 import pickle
+import copy
 
 # 初始化所需存储状态
 if "uploaded_file" not in st.session_state:
     st.session_state["uploaded_file"] = None
 if "unit_list" not in st.session_state:
     st.session_state["unit_list"] = []
+if "unit_list" in st.session_state:
+    unit_list = st.session_state["unit_list"]
 if "df" not in st.session_state:
     st.session_state["df"] = None
 if "df1" not in st.session_state:
     st.session_state["df1"] = None
-if "unit_list" in st.session_state:
-    unit_list = st.session_state["unit_list"]
 if "universal_id" not in st.session_state:
     st.session_state["universal_id"] = {}
 if "ban_list" not in st.session_state:
@@ -92,27 +93,63 @@ def unit_battle():
         st.write('目前还没有创建任何事件')
         return
     else:
-        option = st.selectbox(
-    '请选择战斗人员',
-    st.session_state['df']['姓名'])
-        
+        attacker = st.selectbox('请选择进攻人员',st.session_state['df']['姓名'])
+        name_list = st.session_state['df']['姓名'].tolist()
+        n1 = name_list.index(attacker)
+        attackee = st.selectbox('请选择防守人员',st.session_state['df']['姓名'])
+        name_list = st.session_state['df']['姓名'].tolist()
+        n2 = name_list.index(attackee)
+        if st.button('吸血（演示事例）'):
+            melee = res.attribution(valuable=True,limit=[0,999],value=5)
+            hp = res.attribution(valuable=True,limit=[0,20],value=10)
+            def blood_steal_realize(owner,repeat,world_status):
+                if world_status['event_id_now'] == after_attack.id:
+                    if world_status['attacker'] == owner:
+                        res.universal_id_dict[owner].attribution_dict[hp.id].add_value(world_status['damage'],world_status)
+                return 0,world_status
+            blood_steal_atom = res.atom(blood_steal_realize)
+            def damage_settlement(owner,repeat,world_status):
+                if world_status['event_id_now'] == attack.id:
+                    res.universal_id_dict[world_status['attackee']].attribution_dict[hp.id].add_value(-world_status['damage'],world_status)
+                return 0,world_status
+            damage_atom = res.atom(damage_settlement)
+            attack = res.event()
+            after_attack = res.event()
+            do_attack = res.action(reg_atom_dict={attack.id:[damage_atom.id]},event_list=[attack.id,after_attack.id])
+            player1 = unit_list[n1]
+            p1 = copy.deepcopy(player1)
+            p1.after_deepcopy()
+            player2 = unit_list[n2]
+            blood_steal = res.attribution(valuable=False,reg_atom_dict={after_attack.id:[blood_steal_atom.id]})
+            p1.after_change_attribution_dict()
+            p1.attribution_dict[blood_steal.id].attach()
+            p2 = copy.deepcopy(player2)
+            p2.after_deepcopy()
+            p1.act(do_attack.id,{'attacker':p1.id,
+                                'attackee':p2.id,
+                                'damage':p1.attribution_dict[melee.id].value})
+            st.write(p1.attribution_dict[hp.id].__dict__)
+            st.write(p2.attribution_dict[hp.id].__dict__)
     #hp_now = st.slider('目前血量',0,hp,hp)
 
 # 添加单位函数
-def add_unit(name, hp):
-    player = res.unit(init_attribution = {name.id:{'name':name,'attach_ctn':1},
-                                      hp.id:{'value':hp,'attach_ctn':1}})
-    unit_list.append(player)
+def add_unit(unit):
+    unit_list.append(unit)
     st.session_state["unit_list"] = unit_list
-    df = pd.DataFrame([[e.name, e.hp] for e in st.session_state["unit_list"]], columns=['姓名', 'hp', '职业'])
+    df = pd.DataFrame([[e.id,e.description['name']] 
+                    for e in st.session_state["unit_list"]], columns=['id','姓名'])
+    st.dataframe(df)
     st.session_state['df'] = df
+    res.universal_id_dict[unit.id]=unit
+    res.attribution_model_dict[hp.id]=hp
 
 def del_unit(name):
     name_list = st.session_state['df']['姓名'].tolist()
     n = name_list.index(name)
     unit_list.pop(n)
     st.session_state["unit_list"] = unit_list
-    df = pd.DataFrame([[e.name, e.hp, e.position] for e in st.session_state["unit_list"]], columns=['姓名', 'hp', '职业'])
+    df = pd.DataFrame([[e.id,e.description['name']] 
+                       for e in st.session_state["unit_list"]], columns=['id','姓名'])
     st.session_state['df'] = df
 
 # 显示单位列表函数
@@ -120,19 +157,24 @@ def show_unit_list():
     if len(st.session_state["unit_list"]) == 0:
         st.write('角色列表为空！')
     else:
-        df = pd.DataFrame([[e.name, e.hp, e.position] for e in st.session_state["unit_list"]], columns=['姓名', 'hp', '职业'])
+        n=list(st.session_state["unit_list"][0].attribution_dict.keys())
+        df = pd.DataFrame([[e.id,e.description['name'],e.attribution_dict[n[0]].value] 
+                    for e in st.session_state["unit_list"]], columns=['id','姓名','hp'])
         st.dataframe(df)
         st.session_state['df'] = df
           
 # 添加单位界面
 def add_unit_page():
     st.subheader('添加新角色')
-    name = res.attribution(valuable=False,name=st.text_input('姓名'))
+    name_text = st.text_input('姓名')
     limit_num = st.number_input('上限',min_value=1,max_value=999999)
-    hp = res.attribution(valuable=True,limit=[0,limit_num],value=st.number_input('血量',min_value=0,max_value=limit_num))
+    value_num = st.number_input( '血量',min_value=0,max_value=limit_num)
+    hp = res.attribution(valuable=True,limit=[0,limit_num],value=value_num)
+    unit = res.unit(description={"name":name_text},init_attribution = {hp.id:{'value':hp.value}})
+    unit.on_load()
+    st.write(unit.attribution_dict[hp.id].value)
     if st.button('添加'):
-        add_unit(name, hp)
-        res.universal_id_dict['unit'].append(res.player.id)
+        add_unit(unit)
         st.success('添加成功！')
 
 def del_unit_page():
@@ -163,14 +205,13 @@ def upload_map():
 def save_game():
     st.title("保存你的游戏")
     if st.button("保存"):
-        with open('my_game.pickle','rb') as f:
-            res.universal_id_dict = f
+        game_list = [res.universal_id_dict,res.attribution_model_dict]
+        with open('my_game.pickle','wb') as f:
+            pickle.dump(game_list,f)
         
-
 def load_game():
-    with open('my_game.pickle','wb') as f:
-        pickle.dump(res.universal_id_dict,f)
-
+    with open('my_game.pickle','rb') as f:
+        game_list = f
 
 def qq_management():
     input_number = st.text_input("请输入QQ群号：")
