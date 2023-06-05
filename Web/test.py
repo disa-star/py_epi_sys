@@ -6,7 +6,7 @@ from streamlit_drawable_canvas import st_canvas
 import random
 import restart as res
 from QQ import Group_function
-
+import pickle
 
 # 初始化所需存储状态
 if "uploaded_file" not in st.session_state:
@@ -70,7 +70,6 @@ def drawing():
             #objects[col] = objects[col].astype("str")
         #st.dataframe(objects)
 
-# 创建单位类
 
 def dice_roll():
     st.subheader("投掷骰子")
@@ -93,26 +92,19 @@ def unit_battle():
         st.write('目前还没有创建任何事件')
         return
     else:
-        option = st.multiselect(
+        option = st.selectbox(
     '请选择战斗人员',
     st.session_state['df']['姓名'])
-    
+        
     #hp_now = st.slider('目前血量',0,hp,hp)
 
-class Unit():
-    def __init__(self, name, hp, position):
-        self.name = name
-        self.hp = hp
-        self.position = position
-
 # 添加单位函数
-def add_unit(name, hp, position):
-    unit = Unit(name, hp, position)
-    #unit = res.unit(init_attribution = {name:{name},hp:{hp},position:{position}})
-    #st.write(unit)
-    unit_list.append(unit)
+def add_unit(name, hp):
+    player = res.unit(init_attribution = {name.id:{'name':name,'attach_ctn':1},
+                                      hp.id:{'value':hp,'attach_ctn':1}})
+    unit_list.append(player)
     st.session_state["unit_list"] = unit_list
-    df = pd.DataFrame([[e.name, e.hp, e.position] for e in st.session_state["unit_list"]], columns=['姓名', 'hp', '职业'])
+    df = pd.DataFrame([[e.name, e.hp] for e in st.session_state["unit_list"]], columns=['姓名', 'hp', '职业'])
     st.session_state['df'] = df
 
 def del_unit(name):
@@ -135,11 +127,12 @@ def show_unit_list():
 # 添加单位界面
 def add_unit_page():
     st.subheader('添加新角色')
-    name = st.text_input('姓名')
-    age = st.number_input('hp', min_value=0, max_value=9999999999)
-    position = st.text_input('职业')
+    name = res.attribution(valuable=False,name=st.text_input('姓名'))
+    limit_num = st.number_input('上限',min_value=1,max_value=999999)
+    hp = res.attribution(valuable=True,limit=[0,limit_num],value=st.number_input('血量',min_value=0,max_value=limit_num))
     if st.button('添加'):
-        add_unit(name, age, position)
+        add_unit(name, hp)
+        res.universal_id_dict['unit'].append(res.player.id)
         st.success('添加成功！')
 
 def del_unit_page():
@@ -169,21 +162,15 @@ def upload_map():
 
 def save_game():
     st.title("保存你的游戏")
-    st.write("输入你的备注")
-    input_list = st.text_area("备注", "")
     if st.button("保存"):
-        df = pd.DataFrame(st.session_state["df"], columns=[""])
-        df.to_csv("output.csv", index=False)
-        output_path = input("输入保存路径：")
-        df.to_csv(output_path, index=False)
-        st.write("成功导出为output.csv")
+        with open('my_game.pickle','rb') as f:
+            res.universal_id_dict = f
+        
 
 def load_game():
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file)
-        st.session_state['df1'] = df
-        st.write(st.session_state['df1'])
+    with open('my_game.pickle','wb') as f:
+        pickle.dump(res.universal_id_dict,f)
+
 
 def qq_management():
     input_number = st.text_input("请输入QQ群号：")
@@ -192,22 +179,22 @@ def qq_management():
         if 'qq_flag' not in st.session_state:
             qq.Get_messgae_and_auto_reply()
             st.session_state['qq_flag'] = True
-    if st.button('发送地图'):
-        qq.G_picture(st.session_state["uploaded_file"])
-    if st.button('发送信息'):
-        qq.G_send(st.text_input)
-    option1 = st.selectbox("禁言人员",qq.g_list)
-    ban_list = st.session_state['ban_list']
-    option2 = st.selectbox("解禁人员",ban_list)
-    if st.button('禁言'):
-        qq.G_ban(option1)
-        ban_list.append(option1)
-        st.session_state['ban_list'] = ban_list
-    if st.button('解禁'):
-        n = ban_list.index(option2)
-        qq.G_ban_cancel(option2)
-        ban_list.pop(n)   
-        st.session_state['ban_list'] = ban_list
+        if st.button('发送地图'):
+            qq.G_picture(st.session_state["uploaded_file"])
+        if st.button('发送信息'):
+            qq.G_send(st.text_input)
+        option1 = st.selectbox("禁言人员",qq.g_list)
+        ban_list = st.session_state['ban_list']
+        option2 = st.selectbox("解禁人员",ban_list)
+        if st.button('禁言'):
+            qq.G_ban(option1)
+            ban_list.append(option1)
+            st.session_state['ban_list'] = ban_list
+        if st.button('解禁'):
+            n = ban_list.index(option2)
+            qq.G_ban_cancel(option2)
+            ban_list.pop(n)   
+            st.session_state['ban_list'] = ban_list
     
         
 
