@@ -55,11 +55,7 @@ class id_control():
 
     def on_load(self):
         if self.id in universal_id_dict.keys():
-            if universal_id_dict[self.id] == self:
-                pass
-            else:
-                self.id = self.get_valid_id()
-                universal_id_dict[self.id] = self
+            self.refresh_id()
         else:
             universal_id_dict[self.id] = self
 
@@ -207,6 +203,17 @@ class attribution(id_control):
         assert isinstance(id,int) 
         super().__init__(id=id)
         attribution_model_dict[self.id] = self
+
+    def on_load(self):
+        if self.id in attribution_model_dict.keys():
+            if attribution_model_dict[self.id] is not self:
+                self.refresh_id()
+                attribution_model_dict[self.id] = self
+            else:
+                pass
+        else:
+            attribution_model_dict[self.id] = self
+        return super().on_load()
 
     def __del__(self):
         pass
