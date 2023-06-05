@@ -22,7 +22,7 @@ if "unit_list" in st.session_state:
 if "universal_id" not in st.session_state:
     st.session_state["universal_id"] = {}
 if "ban_list" not in st.session_state:
-    st.session_state['banlist'] = []
+    st.session_state['ban_list'] = []
 
 # 关于地图编辑的相关函数
 def drawing():
@@ -186,8 +186,12 @@ def load_game():
         st.write(st.session_state['df1'])
 
 def qq_management():
-    qq = Group_function(st.text_input("请输入QQ群号："))
-    qq.Get_messgae_and_auto_reply()
+    input_number = st.text_input("请输入QQ群号：")
+    if st.button('加入'):
+        qq = Group_function(input_number)
+        if 'qq_flag' not in st.session_state:
+            qq.Get_messgae_and_auto_reply()
+            st.session_state['qq_flag'] = True
     if st.button('发送地图'):
         qq.G_picture(st.session_state["uploaded_file"])
     if st.button('发送信息'):
