@@ -422,7 +422,9 @@ class unit(id_control):
         for id in temp:
             temp[id].set_owner(self.id)
         for id in self.attribution_dict:
-            
+            if id not in temp:
+                self.attribution_dict[id].attach_to_level(0)
+                continue
             #转移信息+全部注销一次
             temp[id].set_owner(self.id,**(self.attribution_dict[id].dict_out_data()))
             self.attribution_dict[id].attach_to_level(0)
