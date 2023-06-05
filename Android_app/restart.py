@@ -278,9 +278,9 @@ class attribution(id_control):
     def set_owner(self,owner_id,*args,**kwargs):
         self.owner = owner_id
         if self.valuable:
-            if 'value' in kwargs.keys():
+            if 'value' in kwargs:
                 self.value = kwargs['value']
-            if 'limit' in kwargs.keys():
+            if 'limit' in kwargs:
                 self.limit = kwargs['limit']
             self.normalization()
         else:
