@@ -160,23 +160,42 @@ def dice_roll():
         st.caption(f'本次投掷骰子的结果是{result}')
 
 def add_atom():
-    id = num_input()
-    description = dict_input()
-    func = paragraph_input()
+    id = st.number_input('请输入原子ID')
+    description = ()
+    func = st.text_area('python')
     with open('temp.py','w') as f:
-        context = f'''
-import restart as res
-import pickle
-def temp(owner,repeat,world_status):
-    {func}
-    return 0,world_status
+        context = f
+    import restart as res
+    import pickle
+    def temp(owner,repeat,world_status):
+        return 0,world_status
 
-a = res.atom(temp,id={id},description = {description})
-with open("{random_name}", "wb") as f:
-    pickle.dump(a, f)
-        '''
+    a = res.atom(temp,id={id},description = {description})
+    with open("{random_name}", "wb") as f:
+        pickle.dump(a, f)
         f.write(context)
     os.run('temp.py')
+
+res.load()
+def event():
+    id=num_input()
+    a=res.event(id={id})
+    a.dump
+    #dict
+    
+def action():
+    id
+    description
+
+    reg_atom_dict=dict_input()
+    a = res.action(reg_atom_dict=reg_atom_dict,id=id,description=description)
+    a.dump
+
+
+
+
+
+
 
 def qq_management():
     input_number = st.text_input("请输入QQ群号：")
@@ -201,10 +220,34 @@ def qq_management():
             qq.G_ban_cancel(option2)
             ban_list.pop(n)   
             st.session_state['ban_list'] = ban_list
+    with open(random_name, "rb") as f:
+        ddd = pickle.load(f)
+    ddd.on_load()
+
+def load_all():
+    for file in folder:
+        with open(file,"rb") as f:
+            ddd = pickle.load(f)
+        ddd.on_load()
+
+def dice_roll():
+    st.subheader("投掷骰子")
+    st.write("点击投掷骰子")
+    result = None
+    if st.button("六面骰"):
+        result = random.randint(1, 6)
+    if st.button("八面骰"):
+        result = random.randint(1, 8)
+    if st.button("十面骰"):
+        result = random.randint(1, 10)
+    if st.button("二十面骰"):
+        result = random.randint(1, 20)
+    if result is not None:
+        st.caption(f'本次投掷骰子的结果是{result}')
 
 def main():
     st.title('GM辅助系统')
-    menu = ['角色编辑','角色战斗','地图编辑','QQ管理']
+    menu = ['角色编辑','角色战斗','地图编辑','QQ管理','原子编辑']
     choice = st.sidebar.selectbox('选择菜单', menu)
     if st.sidebar.button('保存游戏'):
         save_game()
@@ -222,6 +265,8 @@ def main():
         dice_roll()
     elif choice == 'QQ管理':
         qq_management()
+    elif choice == '原子编辑':
+        add_atom()
 
 if __name__ == '__main__':
     main()
