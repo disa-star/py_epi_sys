@@ -382,6 +382,8 @@ def battle():
                 menu_name = res.universal_id_dic[_].description
                 menu_attribution = res.universal_id_dict[_].attribution_dict[hp.id].__dict__
                 result_menu.append([menu_id,menu_name,menu_attribution])
+                '''{'valuable': True, 'reg_atom_dict': [], 'limit': [0, 35], 'value': 28, 'event_list_on_value_change': {}, 'event_list_on_limit_change': {}, 'owner': 204, 'attach_ctn': 1, 'num': 3, 'id': 103}
+{'valuable': True, 'reg_atom_dict': [], 'limit': [0, 35], 'value': 14, 'event_list_on_value_change': {}, 'event_list_on_limit_change': {}, 'owner': 304, 'attach_ctn': 1, 'num': 3, 'id': 103}'''
         st.write(result_menu)
         #selected_action = selectbox('开始行动（在此之前，确保你已经创建了事件和动作）',action_menu)
         #if selected_action is not None:
