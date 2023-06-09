@@ -60,6 +60,13 @@ class id_control():
             universal_id_dict[self.id] = self
 
 
+def ond():
+    attribution_model_dict = {}
+    for i in universal_id_dict:
+        if i % 100 == 3:
+            attribution_model_dict[i] = universal_id_dict[i]
+
+
 class atom(id_control):
     
     def __init__(self,func,id=0,*args,**kwargs):
@@ -69,7 +76,7 @@ class atom(id_control):
             self.description = kwargs['description']
         #载入挂载函数
         self.func = func
-        assert isinstance(id,int) 
+        #assert isinstance(id,int) 
         self.num = 0
         super().__init__(id=id)
     
@@ -97,7 +104,7 @@ class event(id_control):
         self.atom_list = []
 
         global universal_id_dict
-        assert isinstance(id,int) 
+        #assert isinstance(id,int) 
         self.num = 1
         super().__init__(id=id)
         
@@ -200,7 +207,7 @@ class attribution(id_control):
         self.num = 3
 
         global universal_id_dict,attribution_model_dict
-        assert isinstance(id,int) 
+        #assert isinstance(id,int) 
         super().__init__(id=id)
         attribution_model_dict[self.id] = self
 
@@ -355,7 +362,7 @@ class attribution(id_control):
 
 class action(id_control):
     def __init__(self,id=0,*args,**kwargs):
-        assert isinstance(id,int)
+        #assert isinstance(id,int)
         self.num = 2
         if 'description' in kwargs.keys():
             self.description = kwargs['description']
@@ -401,7 +408,7 @@ class unit(id_control):
     def __init__(self,id=0,*args,**kwargs):
         global universal_id_dict
         global attribution_model_dict
-        assert isinstance(id,int)
+        #assert isinstance(id,int)
         self.num = 4
         super().__init__(id=id)
         if 'description' in kwargs.keys():

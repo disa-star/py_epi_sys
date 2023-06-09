@@ -9,17 +9,20 @@ attack = res.event()
 after_attack = res.event()
 hp = res.attribution(valuable=True,limit=[0,20],value=10)
 melee = res.attribution(valuable=True,limit=[0,999],value=5)
-
+#
 def blood_steal_realize(owner,repeat,world_status):
     if world_status['event_id_now'] == after_attack.id:
         if world_status['attacker'] == owner:
             res.universal_id_dict[owner].attribution_dict[hp.id].add_value(world_status['damage'],world_status)
     return 0,world_status
+#
 blood_steal_atom = res.atom(blood_steal_realize)
+#
 def damage_settlement(owner,repeat,world_status):
     if world_status['event_id_now'] == attack.id:
         res.universal_id_dict[world_status['attackee']].attribution_dict[hp.id].add_value(-world_status['damage'],world_status)
     return 0,world_status
+#
 damage_atom = res.atom(damage_settlement)
 
 do_attack = res.action(reg_atom_dict={attack.id:[damage_atom.id]},event_list=[attack.id,after_attack.id])
