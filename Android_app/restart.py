@@ -72,8 +72,16 @@ class atom(id_control):
     def __init__(self,func,id=0,*args,**kwargs):
         global universal_id_dict        
         #载入描述
+        if 'required_status_keys' in kwargs.keys():
+            self.required_status_keys = kwargs['required_status_keys']
+        else:
+            self.required_status_keys = []
+
         if 'description' in kwargs.keys():
             self.description = kwargs['description']
+        else:
+            self.description = []
+            
         #载入挂载函数
         self.func = func
         #assert isinstance(id,int) 
