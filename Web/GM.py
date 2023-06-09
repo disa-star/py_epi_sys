@@ -119,7 +119,7 @@ def drawing():
         bg_image = Image.open(st.session_state["uploaded_file"])
         w = bg_image.width       #图片的宽
         h = bg_image.height      #图片的高
-
+    
 
     # 画布设置
     canvas_result = st_canvas(
@@ -138,26 +138,88 @@ def drawing():
         point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
         key="canvas",
     )
+def unit_battle():
+    st.subheader('战斗系统')
+    if st.session_state['df'] is None:
+        st.write('目前还没有创建任何人物')
+        return
+    
+def dice_roll():
+    st.subheader("投掷骰子")
+    st.write("点击投掷骰子")
+    result = None
+    if st.button("六面骰"):
+        result = random.randint(1, 6)
+    if st.button("八面骰"):
+        result = random.randint(1, 8)
+    if st.button("十面骰"):
+        result = random.randint(1, 10)
+    if st.button("二十面骰"):
+        result = random.randint(1, 20)
+    if result is not None:
+        st.caption(f'本次投掷骰子的结果是{result}')
 
 def add_atom():
-    id = num_input()
-    description = dict_input()
-    func = paragraph_input()
+    id = st.number_input('请输入原子ID')
+    description = ()
+    func = st.text_area('python')
     with open('temp.py','w') as f:
-        context = f'''
-import restart as res
-import pickle
-def temp(owner,repeat,world_status):
-    {func}
-    return 0,world_status
+        context = f
+    import restart as res
+    import pickle
+    def temp(owner,repeat,world_status):
+        return 0,world_status
 
-a = res.atom(temp,id={id},description = {description})
-with open("{random_name}", "wb") as f:
-    pickle.dump(a, f)
-        '''
+    a = res.atom(temp,id={id},description = {description})
+    with open("{random_name}", "wb") as f:
+        pickle.dump(a, f)
         f.write(context)
     os.run('temp.py')
 
+res.load()
+def event():
+    id=num_input()
+    a=res.event(id={id})
+    a.dump
+    #dict
+    
+def action():
+    id
+    description
+
+    reg_atom_dict=dict_input()
+    a = res.action(reg_atom_dict=reg_atom_dict,id=id,description=description)
+    a.dump
+
+
+
+
+
+
+
+def qq_management():
+    input_number = st.text_input("请输入QQ群号：")
+    if st.button('加入'):
+        qq = Group_function(input_number)
+        if 'qq_flag' not in st.session_state:
+            qq.Get_messgae_and_auto_reply()
+            st.session_state['qq_flag'] = True
+        if st.button('发送地图'):
+            qq.G_picture(st.session_state["uploaded_file"])
+        if st.button('发送信息'):
+            qq.G_send(st.text_input)
+        option1 = st.selectbox("禁言人员",qq.g_list)
+        ban_list = st.session_state['ban_list']
+        option2 = st.selectbox("解禁人员",ban_list)
+        if st.button('禁言'):
+            qq.G_ban(option1)
+            ban_list.append(option1)
+            st.session_state['ban_list'] = ban_list
+        if st.button('解禁'):
+            n = ban_list.index(option2)
+            qq.G_ban_cancel(option2)
+            ban_list.pop(n)   
+            st.session_state['ban_list'] = ban_list
     with open(random_name, "rb") as f:
         ddd = pickle.load(f)
     ddd.on_load()
@@ -185,7 +247,7 @@ def dice_roll():
 
 def main():
     st.title('GM辅助系统')
-    menu = ['角色编辑','角色战斗','地图编辑','QQ管理']
+    menu = ['角色编辑','角色战斗','地图编辑','QQ管理','原子编辑']
     choice = st.sidebar.selectbox('选择菜单', menu)
     if st.sidebar.button('保存游戏'):
         save_game()
@@ -203,6 +265,8 @@ def main():
         dice_roll()
     elif choice == 'QQ管理':
         qq_management()
+    elif choice == '原子编辑':
+        add_atom()
 
 if __name__ == '__main__':
     main()
