@@ -42,7 +42,7 @@ def create_id(name,defined_num):
     with col1:
         id0 = st.number_input(f'请输入{name}ID:',value=0,min_value=0,max_value=999999,disabled=flag) 
         if st.button(f'确认输入{name}ID'):
-            id = id0
+            id = int(id0)
             idl.pop(0)
             idl.insert(0, id)
             st.success('输入成功！')
@@ -244,7 +244,9 @@ def add_unit():
             with open(os.path.join(path, game_name), "rb") as f:
                 res.universal_id_dict = copy.deepcopy(pickle.load(f))
                 res.ond()
-            res.unit(copy.deepcopy(res.universal_id_dict[a0[0]]))
+            if a0 is not None:
+                a = res.unit(copy.deepcopy(res.universal_id_dict[a0[0]]))
+                a.after_deepcopy()
             with open(os.path.join(path, game_name), "wb") as f:
                 pickle.dump(res.universal_id_dict,f)
             center_running()
@@ -286,8 +288,8 @@ def add_map():
         background_color=bg_color,
         background_image= bg_image if st.session_state["uploaded_file"] else None,
         update_streamlit=True,
-        height = h/12 if st.session_state["uploaded_file"] else None,
-        width = w/9 if st.session_state["uploaded_file"] else None,
+        height = h if st.session_state["uploaded_file"] else None,
+        width = w if st.session_state["uploaded_file"] else None,
         #height = st.slider('高度',100,1000,step = 100),
         #width = st.slider('宽度',100,1000,step = 100),
         drawing_mode=drawing_mode,
@@ -300,6 +302,7 @@ def battle():
     with col1:
         st.subheader('请选择行动')
         a0 = file_seeker('开始行动（在此之前，确保你已经创建了事件和动作）',2)
+        a = None
         if a0 is not None:
             a = res.universal_id_dict[a0[0]]
         action_owner_id = st.number_input('绑定实施者',0,999999)
@@ -311,7 +314,10 @@ def battle():
             with open(os.path.join(path, game_name), "rb") as f:
                 res.universal_id_dict = copy.deepcopy(pickle.load(f))
                 res.ond()
-            a.do(owner_id=action_owner_id,world_status=description_oid)
+            if a is not None:
+                a.do(owner_id=action_owner_id,world_status=description_oid)
+            else:
+                st.write('请添加事件')
             with open(os.path.join(path, game_name), "wb") as f:
                 pickle.dump(res.universal_id_dict,f)
             st.success('游戏进行成功！')
@@ -323,7 +329,7 @@ def battle():
         for _ in res.universal_id_dict.keys():
             if _[-1] == 4:
                 menu_id = res.universal_id_dict[_].id
-                menu_name = res.universal_id_dic[_].description
+                menu_name = res.universal_id_dict[_].description
                 menu_attribution = res.universal_id_dict[_].attribution_dict[hp.id].__dict__
                 result_menu.append([menu_id,menu_name,menu_attribution])
                 '''{'valuable': True, 'reg_atom_dict': [], 'limit': [0, 35], 'value': 28, 'event_list_on_value_change': {}, 'event_list_on_limit_change': {}, 'owner': 204, 'attach_ctn': 1, 'num': 3, 'id': 103}
@@ -362,25 +368,25 @@ def main():
         with open(os.path.join(path, game_name), "wb") as f:
             pickle.dump(res.universal_id_dict,f)
     elif selected == '原子建构':
-        colored_header(label="原子建构",description="用于存放实现逻辑处理的函数，其中的函数负责处理world_status字典",color_name="red-60",)
+        colored_header(label="原子建构",description="用于存放实现逻辑处理的函数，其中的函数负责处理world_status字典",color_name="red-70",)
         add_atom()
     elif selected == '事件建构':
-        colored_header(label="事件建构",description="用于储存由atom所存储的函数的列表，在使用event.run()方法时，该类会依次调用所有他存储的函数",color_name="yellow-50",)
+        colored_header(label="事件建构",description="用于储存由atom所存储的函数的列表，在使用event.run()方法时，该类会依次调用所有他存储的函数",color_name="blue-green-70",)
         add_event()
     elif selected == '行动建构':
-        colored_header(label="行动建构",description="用于存储一个执行的动作，负责存储一个event列表，在action.do()时依次对其中的event使用event.run()",color_name="green-40",)
+        colored_header(label="行动建构",description="用于存储一个执行的动作，负责存储一个event列表，在action.do()时依次对其中的event使用event.run()",color_name="green-70",)
         add_action()
     elif selected == '属性建构':
-        colored_header(label="属性建构",description="用于存储所有的附着在人物身上的属性组成的一个event列表，在改变时，对列表中每个event依次使用event.run()",color_name="blue-30",)
+        colored_header(label="属性建构",description="用于存储所有的附着在人物身上的属性组成的一个event列表，在改变时，对列表中每个event依次使用event.run()",color_name="blue-70",)
         add_attribution()
     elif selected == '角色建构':
-        colored_header(label="角色建构",description="负责挂载许多attirbution的深拷贝，是执行action的主体",color_name="gray-70",)
+        colored_header(label="角色建构",description="负责挂载许多attirbution的深拷贝，是执行action的主体",color_name="light-blue-70",)
         add_unit()
     elif selected == '地图建构':
-        colored_header(label="地图建构",description="可编辑的地图导入和导出",color_name="red-30",)
+        colored_header(label="地图建构",description="可编辑的地图导入和导出",color_name="yellow-70",)
         add_map()
     elif selected == '游戏页面':
-        colored_header(label="游戏页面",description="各类角色交互的页面",color_name="orange-80",)
+        colored_header(label="游戏页面",description="各类角色交互的页面",color_name="orange-70",)
         battle()
     
     #choice = st.sidebar.selectbox('选择菜单', menu)
